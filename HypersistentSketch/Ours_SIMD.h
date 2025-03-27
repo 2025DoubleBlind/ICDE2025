@@ -5,6 +5,8 @@
 #include "Abstract.h"
 #include "Filter.h"
 #include "HotStorage.h"
+#include <immintrin.h>
+
 template<typename DATA_TYPE,typename COUNT_TYPE, int d1, int d2, int cache_size>
 class Filters_SIMD
 {
