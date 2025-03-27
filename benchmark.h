@@ -16,6 +16,8 @@
 #include "WS.h"
 #include "Ours_SIMD.h"
 #include "CM.h"
+#include "TightSketch.h"
+#include "PSketch.h"
 
 
 template<typename DATA_TYPE,typename COUNT_TYPE>
@@ -96,6 +98,8 @@ public:
                 new SS<DATA_TYPE, COUNT_TYPE>(2.0 / T / (15.0 / M)),
                 new Ours<DATA_TYPE, COUNT_TYPE, 3, 3, 1>(M, 0.6, HIT > 300 ? 255 : HIT - 25 - 20, 25, 85),
                 new Ours_SIMD<DATA_TYPE, COUNT_TYPE, 3, 3, 1>(M, 0.6, HIT > 300 ? 255 : HIT - 25 - 20, 25, 85),
+                new TightSketch<DATA_TYPE, COUNT_TYPE>(3, M * 1024 / (3 * (sizeof(COUNT_TYPE) * 2 + sizeof(DATA_TYPE) + 1))),
+                new PSketch<DATA_TYPE, COUNT_TYPE>(3, M * 1024 / (3 * (sizeof(DATA_TYPE) + sizeof(COUNT_TYPE) * 2 + 1)), W),
         };
 
         BenchInsert(FPIs);
@@ -114,6 +118,8 @@ public:
                 new SS<DATA_TYPE, COUNT_TYPE>(2.0 / T / (15.0 / M)),
                 new Ours<DATA_TYPE, COUNT_TYPE, 2, 1, 5>(M, 0.85, 100, 25, 85),
                 new Ours_SIMD<DATA_TYPE, COUNT_TYPE, 2, 1, 5>(M, 0.85, 100, 25, 85),
+                new TightSketch<DATA_TYPE, COUNT_TYPE>(3, M * 1024 / (3 * (sizeof(COUNT_TYPE) * 2 + sizeof(DATA_TYPE) + 1))),
+                new PSketch<DATA_TYPE, COUNT_TYPE>(3, M * 1024 / (3 * (sizeof(DATA_TYPE) + sizeof(COUNT_TYPE) * 2 + 1)), W),
         };
 
         for(auto FPI : FPIs){
@@ -257,6 +263,11 @@ private:
             aae += abs(real - per);
             are += abs(real - per) / (real + 0.0);
         }
+
+        std::cout << sketch->getName() << ":" << std::endl;
+        std::cout << "\tAAE: " << aae / mp.size() << std::endl;
+        std::cout << "\tARE: " << are / mp.size() << std::endl;
+        std::cout << "\tThp: " << insert_through[sketch->getName()] << std::endl;
 
         ofstream outFile(R"(./output.csv)",std::ios::app);
         outFile << sketch->getName() << "," << M << "," << W << "," << aae / mp.size() << ","
